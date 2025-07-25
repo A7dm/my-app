@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title >قائمة الطلاب - الأسبوع 2</title>
+  <title class="js-number">قائمة الطلاب - الأسبوع 1</title>
   <style>
     body {
       font-family: 'Tahoma', sans-serif;
@@ -65,7 +65,7 @@
 </head>
 <body>
 
-  <h2 class="js-n1">قائمة جميع الطلاب - الأسبوع 2</h2>
+  <h2 class="js-number">قائمة جميع الطلاب - الأسبوع 1</h2>
   <button id="backBtn">العودة</button>
   
   
@@ -205,32 +205,41 @@
   </datalist>
 
 <script>
-  const weekends ={
-    weekend2:2 , 
-    weekend3:3,
-    weekend4:4,
-    weekend5:5,
-  }
-let xo2 = `قائمة جميع الطلاب - الأسبوع ${weekends.weekend2}` 
-document.querySelector('.js-n1').innerHTML=xo2
 
 
+function setWeekTitle(weekVarName) {
+  const numberMatch = weekVarName.match(/\d+/); // استخراج الرقم من الاسم
+  const number = numberMatch ? numberMatch[0] : '؟';
+  const els = document.querySelectorAll('.js-number');
+  els.forEach(el => {
+    el.innerHTML = `قائمة جميع الطلاب - الأسبوع ${number}`;
+  });
+}
 
-
-
-
+setWeekTitle("weekend2"); 
 
 
 
   // استرجاع الطلاب من التخزين المحلي أو استخدام الافتراضي
   function getStudents() {
-    return JSON.parse(localStorage.getItem('students')) || [
-      {username: 'محمد'},
-      {username: 'علي'},
-      {username: 'فاطمة'},
-      {username: 'عائشة'},
-    ];
+    return students
   }
+
+  let students = [];
+
+async function loadStudentsFromServer() {
+  try {
+    const res = await fetch('/students');
+    if (!res.ok) throw new Error('فشل الاستجابة من الخادم');
+    students = await res.json();
+    renderTable(); // ← إعادة رسم الجدول بعد تحميل الطلاب
+  } catch (err) {
+    console.error('فشل تحميل الطلاب من الخادم:', err);
+    students = [];
+    renderTable(); // عرض "لا يوجد طلاب"
+  }
+}
+
 
   // دوال مساعدة لإنشاء عناصر الجدول
   function createCell(text, attrs = {}) {
@@ -472,7 +481,7 @@ document.querySelector('.js-n1').innerHTML=xo2
   });
 
   // تحميل الجدول عند فتح الصفحة
-  renderTable();
+ loadStudentsFromServer();
 </script>
 
 </body>

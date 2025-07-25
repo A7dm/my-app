@@ -125,17 +125,27 @@ async function start() {
       console.error(error);
     }
   } else if (accountType === 'student') {
-    let students = JSON.parse(localStorage.getItem('students')) || [];
-    const user = students.find(s => s.username === username && s.password === password);
+  try {
+    const response = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, accountType })
+    });
 
-    if (user) {
-      localStorage.setItem('loggedInUsername', username);
-      window.location.href = 'student-dashboard/student-dashboard.html';
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      localStorage.setItem('loggedInUsername', result.username || username);
+      window.location.href = result.redirect;
     } else {
-      alert('اسم المستخدم أو كلمة المرور غير صحيحة.');
-      document.getElementById('password').value = '';
+      alert(result.message || 'بيانات الدخول غير صحيحة.');
     }
-  } else {
+  } catch (error) {
+    alert('⚠️ حدث خطأ في الاتصال بالخادم.');
+    console.error(error);
+  }
+}
+ else {
     alert('يرجى اختيار نوع الحساب');
   }
 }

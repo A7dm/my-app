@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>قائمة الطلاب - الأسبوع  2  - الثلاثاء</title>
+  <title class="js-number">قائمة الطلاب - الأسبوع 1  - الثلاثاء</title>
   <style>
     body {
       font-family: 'Tahoma', sans-serif;
@@ -65,7 +65,7 @@
 </head>
 <body>
 
-<h2>قائمة جميع الطلاب - الأسبوع  2    - الثلاثاء</h2>
+<h2 class="js-number">قائمة جميع الطلاب - الأسبوع 1    - الثلاثاء</h2>
 <button id="backBtn">العودة</button>
 
 <table>
@@ -205,14 +205,39 @@
 </datalist>
 
 <script>
+
+  function setWeekTitle(weekVarName) {
+  const numberMatch = weekVarName.match(/\d+/); // استخراج الرقم من الاسم
+  const number = numberMatch ? numberMatch[0] : '؟';
+  const els = document.querySelectorAll('.js-number');
+  els.forEach(el => {
+    el.innerHTML = `قائمة جميع الطلاب - الأسبوع ${number} - الثلاثاء`;
+  });
+}
+
+setWeekTitle("weekend2"); 
+
+
+
   function getStudents() {
-    return JSON.parse(localStorage.getItem('students')) || [
-      {username: 'محمد'},
-      {username: 'علي'},
-      {username: 'فاطمة'},
-      {username: 'عائشة'},
-    ];
+    return students
   }
+
+  let students = [];
+
+async function loadStudentsFromServer() {
+  try {
+    const res = await fetch('/students');
+    if (!res.ok) throw new Error('فشل الاستجابة من الخادم');
+    students = await res.json();
+    renderTable(); // ← إعادة رسم الجدول بعد تحميل الطلاب
+  } catch (err) {
+    console.error('فشل تحميل الطلاب من الخادم:', err);
+    students = [];
+    renderTable(); // عرض "لا يوجد طلاب"
+  }
+}
+
 
   function createCell(content, attrs = {}) {
     const td = document.createElement('td');
@@ -413,7 +438,7 @@
     window.location.href = '/button2/eday/eDay.html';
   });
 
-  renderTable();
+  loadStudentsFromServer();
 </script>
 
 </body>

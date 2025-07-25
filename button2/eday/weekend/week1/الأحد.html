@@ -206,13 +206,24 @@
 
 <script>
   function getStudents() {
-    return JSON.parse(localStorage.getItem('students')) || [
-      {username: 'محمد'},
-      {username: 'علي'},
-      {username: 'فاطمة'},
-      {username: 'عائشة'},
-    ];
+    return students
   }
+
+  let students = [];
+
+async function loadStudentsFromServer() {
+  try {
+    const res = await fetch('/students');
+    if (!res.ok) throw new Error('فشل الاستجابة من الخادم');
+    students = await res.json();
+    renderTable(); // ← إعادة رسم الجدول بعد تحميل الطلاب
+  } catch (err) {
+    console.error('فشل تحميل الطلاب من الخادم:', err);
+    students = [];
+    renderTable(); // عرض "لا يوجد طلاب"
+  }
+}
+
 
   function createCell(content, attrs = {}) {
     const td = document.createElement('td');
@@ -413,7 +424,7 @@
     window.location.href = '/button2/eday/eDay.html';
   });
 
-  renderTable();
+  loadStudentsFromServer();
 </script>
 
 </body>

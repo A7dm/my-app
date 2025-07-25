@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>قائمة الطلاب - الأسبوع  2  - الأربعاء</title>
+  <title class="js-number">قائمة الطلاب - الأسبوع 1  - الأربعاء</title>
   <style>
     body {
       font-family: 'Tahoma', sans-serif;
@@ -65,7 +65,7 @@
 </head>
 <body>
 
-<h2>قائمة جميع الطلاب - الأسبوع  2    - الأربعاء</h2>
+<h2 class="js-number">قائمة جميع الطلاب - الأسبوع 1    - الأربعاء</h2>
 <button id="backBtn">العودة</button>
 
 <table>
@@ -205,14 +205,39 @@
 </datalist>
 
 <script>
+
+  function setWeekTitle(weekVarName) {
+  const numberMatch = weekVarName.match(/\d+/); // استخراج الرقم من الاسم
+  const number = numberMatch ? numberMatch[0] : '؟';
+  const els = document.querySelectorAll('.js-number');
+  els.forEach(el => {
+    el.innerHTML = `قائمة جميع الطلاب - الأسبوع ${number} - الأربعاء`;
+  });
+}
+
+setWeekTitle("weekend2"); 
+
+
+
   function getStudents() {
-    return JSON.parse(localStorage.getItem('students')) || [
-      {username: 'محمد'},
-      {username: 'علي'},
-      {username: 'فاطمة'},
-      {username: 'عائشة'},
-    ];
+    return students
   }
+
+  let students = [];
+
+async function loadStudentsFromServer() {
+  try {
+    const res = await fetch('/students');
+    if (!res.ok) throw new Error('فشل الاستجابة من الخادم');
+    students = await res.json();
+    renderTable(); // ← إعادة رسم الجدول بعد تحميل الطلاب
+  } catch (err) {
+    console.error('فشل تحميل الطلاب من الخادم:', err);
+    students = [];
+    renderTable(); // عرض "لا يوجد طلاب"
+  }
+}
+
 
   function createCell(content, attrs = {}) {
     const td = document.createElement('td');
@@ -318,7 +343,7 @@
 
     students.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
 
-    const savedData = JSON.parse(localStorage.getItem('students_weekend1_الأربعاء')) || {};
+    const savedData = JSON.parse(localStorage.getItem('students_weekend2_الأربعاء')) || {};
 
     students.forEach((student, index) => {
       const data = savedData[student.username] || {};
@@ -385,7 +410,7 @@
       };
     });
 
-    localStorage.setItem('students_weekend1_الأربعاء', JSON.stringify(data));
+    localStorage.setItem('students_weekend2_الأربعاء', JSON.stringify(data));
 
     const confirm = document.getElementById('saveConfirm');
     confirm.style.display = 'block';
@@ -413,7 +438,7 @@
     window.location.href = '/button2/eday/eDay.html';
   });
 
-  renderTable();
+  loadStudentsFromServer();
 </script>
 
 </body>

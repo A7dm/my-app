@@ -93,24 +93,117 @@
     const evaluations = ["ممتاز", "جيد جدا", "جيد", "لم ينجز", "غياب", "متأخر ولم يسمع", "إنجاز جزئي", "درس", "غاب ولكن عوض"];
 
     // قراءة جميع الطلاب من التخزين
-    const studentAccounts = JSON.parse(localStorage.getItem('students')) || [];
-    let students = JSON.parse(localStorage.getItem('students_weeks1')) || [];
+   async function fetchStudentsFromAPI() {
+  const response = await fetch('/students');
+  const data = await response.json();
+  return data;
+}
 
-    // مزامنة الطلاب الجدد من القائمة العامة إلى قائمة الأسبوع 1
-    const usernamesInWeek1 = students.map(s => s.username);
-    const newStudents = studentAccounts.filter(s => !usernamesInWeek1.includes(s.username));
 
-    newStudents.forEach(student => {
-      students.push({
-        username: student.username,
-        week: "1",
-        sunday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" },
-        tuesday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" }
-      });
-    });
 
-    // حفظ التغييرات بعد الدمج
-    localStorage.setItem('students_weeks1', JSON.stringify(students));
+    let students = [];
+
+async function initializeStudents() {
+  const studentAccounts = await fetchStudentsFromAPI();
+
+  const savedWeek1 = JSON.parse(localStorage.getItem('students_weeks1')) || [];
+
+  students = studentAccounts.map(student => {
+    const saved = savedWeek1.find(s => s.username === student.username);
+    if (saved) return saved;
+    return {
+      username: student.username,
+      week: "1",
+      sunday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" },
+      tuesday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" }
+    };
+  });
+
+  localStorage.setItem('students_weeks1', JSON.stringify(students));
+
+  loadTable();  // <--- هنا استدعاء دالة تحميل الجدول
+
+
+  // خزّن البيانات في localStorage (اختياري)
+  localStorage.setItem('students_weeks1', JSON.stringify(students));
+
+  function loadTable() {
+  studentsBody.innerHTML = ''; // امسح المحتوى القديم
+
+  students.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
+
+  students.forEach((student, index) => {
+    const createRow = (day, data) => {
+      const tr = document.createElement('tr');
+
+      if (day === 'الأحد') {
+        const numberTd = document.createElement('td');
+        numberTd.textContent = index + 1;
+        numberTd.rowSpan = 2;
+        tr.appendChild(numberTd);
+
+        const nameTd = document.createElement('td');
+        nameTd.textContent = student.username;
+        nameTd.rowSpan = 2;
+        tr.appendChild(nameTd);
+      }
+
+      const dayTd = document.createElement('td');
+      dayTd.textContent = day;
+      tr.appendChild(dayTd);
+
+      const surahInput = createInput(data.surah, val => {
+        data.surah = val;
+        saveData();
+      }, 'اكتب اسم السورة');
+      surahInput.setAttribute('list', 'surahList');
+      const surahTd = document.createElement('td');
+      surahTd.appendChild(surahInput);
+      tr.appendChild(surahTd);
+
+      const fromToTd = document.createElement('td');
+      fromToTd.appendChild(createInput(data.fromTo, val => {
+        data.fromTo = val;
+        saveData();
+      }, 'من - إلى'));
+      tr.appendChild(fromToTd);
+
+      const achvTd = document.createElement('td');
+      achvTd.appendChild(createCheckbox(data.achievement, val => {
+        data.achievement = val;
+        saveData();
+      }));
+      tr.appendChild(achvTd);
+
+      const evalTd = document.createElement('td');
+      evalTd.appendChild(createEvaluationSelect(data.evaluation, val => {
+        data.evaluation = val;
+        saveData();
+      }));
+      tr.appendChild(evalTd);
+
+      const defTd = document.createElement('td');
+      defTd.appendChild(createInput(data.deficit, val => {
+        data.deficit = val;
+        saveData();
+      }));
+      tr.appendChild(defTd);
+
+      const noteTd = document.createElement('td');
+      noteTd.appendChild(createInput(data.notes, val => {
+        data.notes = val;
+        saveData();
+      }));
+      tr.appendChild(noteTd);
+
+      return tr;
+    };
+
+    studentsBody.appendChild(createRow('الأحد', student.sunday));
+    studentsBody.appendChild(createRow('الثلاثاء', student.tuesday));
+  });
+}}
+
 
     const studentsBody = document.getElementById('studentsBody');
     const datalist = document.getElementById('surahList');
@@ -235,6 +328,11 @@
     });
 
     document.getElementById('backBtn').onclick = () => window.history.back();
+
+    window.onload = () => {
+  initializeStudents();
+};
+
   </script>
 </body>
 </html>

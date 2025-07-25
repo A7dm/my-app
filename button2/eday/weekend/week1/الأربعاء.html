@@ -206,13 +206,24 @@
 
 <script>
   function getStudents() {
-    return JSON.parse(localStorage.getItem('students')) || [
-      {username: 'محمد'},
-      {username: 'علي'},
-      {username: 'فاطمة'},
-      {username: 'عائشة'},
-    ];
+    return students
   }
+
+  let students = [];
+
+async function loadStudentsFromServer() {
+  try {
+    const res = await fetch('/students');
+    if (!res.ok) throw new Error('فشل الاستجابة من الخادم');
+    students = await res.json();
+    renderTable(); // ← إعادة رسم الجدول بعد تحميل الطلاب
+  } catch (err) {
+    console.error('فشل تحميل الطلاب من الخادم:', err);
+    students = [];
+    renderTable(); // عرض "لا يوجد طلاب"
+  }
+}
+
 
   function createCell(content, attrs = {}) {
     const td = document.createElement('td');
@@ -318,7 +329,7 @@
 
     students.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
 
-    const savedData = JSON.parse(localStorage.getItem('students_weekend2_الأربعاء')) || {};
+    const savedData = JSON.parse(localStorage.getItem('students_weekend1_الأربعاء')) || {};
 
     students.forEach((student, index) => {
       const data = savedData[student.username] || {};
@@ -385,7 +396,7 @@
       };
     });
 
-    localStorage.setItem('students_weekend2_الأربعاء', JSON.stringify(data));
+    localStorage.setItem('students_weekend1_الأربعاء', JSON.stringify(data));
 
     const confirm = document.getElementById('saveConfirm');
     confirm.style.display = 'block';
@@ -413,7 +424,7 @@
     window.location.href = '/button2/eday/eDay.html';
   });
 
-  renderTable();
+  loadStudentsFromServer();
 </script>
 
 </body>

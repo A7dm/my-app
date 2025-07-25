@@ -77,36 +77,46 @@
   </div>
 
   <script>
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    const createBtn = document.getElementById('createBtn');
-    const message = document.getElementById('message');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const createBtn = document.getElementById('createBtn');
+const message = document.getElementById('message');
 
-    createBtn.addEventListener('click', () => {
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value.trim();
+createBtn.addEventListener('click', async () => {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value.trim();
 
-      if (!username || !password) {
-        alert('يرجى إدخال اسم المستخدم وكلمة المرور');
-        return;
-      }
+  if (!username || !password) {
+    alert('يرجى إدخال اسم المستخدم وكلمة المرور');
+    return;
+  }
 
-      let students = JSON.parse(localStorage.getItem('students')) || [];
+  try {
+    const response = await fetch('/create-student', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
 
-      if (students.some(s => s.username === username)) {
-        alert('اسم المستخدم موجود بالفعل. يرجى اختيار اسم آخر.');
-        return;
-      }
+    const result = await response.json();
 
-      students.push({ username, password });
-      localStorage.setItem('students', JSON.stringify(students));
-
-      message.textContent = 'تم إنشاء الحساب بنجاح!';
-
+    if (response.ok && result.success) {
+      message.textContent = '✅ تم إنشاء الحساب بنجاح!';
+      message.style.color = 'green';
       usernameInput.value = '';
       passwordInput.value = '';
-    });
-  </script>
+    } else {
+      message.textContent = '❌ ' + (result.message || 'حدث خطأ أثناء إنشاء الحساب');
+      message.style.color = 'red';
+    }
+  } catch (error) {
+    console.error(error);
+    message.textContent = '⚠️ حدث خطأ في الاتصال بالخادم.';
+    message.style.color = 'red';
+  }
+});
+</script>
+
 
 </body>
 </html>

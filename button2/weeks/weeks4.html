@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>قائمة الطلاب - الأسبوع 1</title>
+  <title class="js-number1">قائمة الطلاب - الأسبوع 1</title>
   <style>
     body {
       font-family: 'Tahoma', sans-serif;
@@ -51,7 +51,7 @@
 </head>
 <body>
 
-  <h2>قائمة جميع الطلاب - الأسبوع 1</h2>
+  <h2 class="js-number">قائمة جميع الطلاب - الأسبوع 1</h2>
   <button id="backBtn">العودة</button>
 
   <table>
@@ -74,6 +74,26 @@
   <datalist id="surahList"></datalist>
 
   <script>
+   // حدد كل العناصر التي تحمل الكلاس js-number
+function setWeekTitle(weekVarName) {
+  const numberMatch = weekVarName.match(/\d+/); // استخراج الرقم من الاسم
+  const number = numberMatch ? numberMatch[0] : '؟';
+  const el = document.querySelector('.js-number');
+  const il = document.querySelector('.js-number1')
+  if (el) {
+    el.innerHTML = `قائمة جميع الطلاب - الأسبوع ${number}`;
+    il.innerHTML = `قائمة جميع الطلاب - الأسبوع ${number}`;
+  }
+}
+
+
+setWeekTitle("weeks4"); // سيطبع: قائمة جميع الطلاب - الأسبوع 4
+
+
+
+
+
+
     const quranSurahs = ["الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف",
       "الأنفال", "التوبة", "يونس", "هود", "يوسف", "الرعد", "إبراهيم", "الحجر",
       "النحل", "الإسراء", "الكهف", "مريم", "طه", "الأنبياء", "الحج", "المؤمنون",
@@ -92,18 +112,118 @@
       "المسد", "الإخلاص", "الفلق", "الناس"];
     const evaluations = ["ممتاز", "جيد جدا", "جيد", "لم ينجز", "غياب", "متأخر ولم يسمع", "إنجاز جزئي", "درس", "غاب ولكن عوض"];
 
-    const studentAccounts = JSON.parse(localStorage.getItem('students')) || [];
-    let students = JSON.parse(localStorage.getItem('students_weeks4')) || [];
+    // قراءة جميع الطلاب من التخزين
+   async function fetchStudentsFromAPI() {
+  const response = await fetch('/students');
+  const data = await response.json();
+  return data;
+}
 
-    if (students.length === 0) {
-      students = studentAccounts.map(student => ({
-        username: student.username,
-        week: "1",
-        sunday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" },
-        tuesday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" }
+
+
+    let students = [];
+
+async function initializeStudents() {
+  const studentAccounts = await fetchStudentsFromAPI();
+
+  const savedWeek1 = JSON.parse(localStorage.getItem('students_weeks4')) || [];
+
+  students = studentAccounts.map(student => {
+    const saved = savedWeek1.find(s => s.username === student.username);
+    if (saved) return saved;
+    return {
+      username: student.username,
+      week: "1",
+      sunday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" },
+      tuesday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" }
+    };
+  });
+
+  localStorage.setItem('students_weeks4', JSON.stringify(students));
+
+  loadTable();  // <--- هنا استدعاء دالة تحميل الجدول
+
+
+  // خزّن البيانات في localStorage (اختياري)
+  localStorage.setItem('students_weeks4', JSON.stringify(students));
+
+  function loadTable() {
+  studentsBody.innerHTML = ''; // امسح المحتوى القديم
+
+  students.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
+
+  students.forEach((student, index) => {
+    const createRow = (day, data) => {
+      const tr = document.createElement('tr');
+
+      if (day === 'الأحد') {
+        const numberTd = document.createElement('td');
+        numberTd.textContent = index + 1;
+        numberTd.rowSpan = 2;
+        tr.appendChild(numberTd);
+
+        const nameTd = document.createElement('td');
+        nameTd.textContent = student.username;
+        nameTd.rowSpan = 2;
+        tr.appendChild(nameTd);
+      }
+
+      const dayTd = document.createElement('td');
+      dayTd.textContent = day;
+      tr.appendChild(dayTd);
+
+      const surahInput = createInput(data.surah, val => {
+        data.surah = val;
+        saveData();
+      }, 'اكتب اسم السورة');
+      surahInput.setAttribute('list', 'surahList');
+      const surahTd = document.createElement('td');
+      surahTd.appendChild(surahInput);
+      tr.appendChild(surahTd);
+
+      const fromToTd = document.createElement('td');
+      fromToTd.appendChild(createInput(data.fromTo, val => {
+        data.fromTo = val;
+        saveData();
+      }, 'من - إلى'));
+      tr.appendChild(fromToTd);
+
+      const achvTd = document.createElement('td');
+      achvTd.appendChild(createCheckbox(data.achievement, val => {
+        data.achievement = val;
+        saveData();
       }));
-      localStorage.setItem('students_weeks4', JSON.stringify(students));
-    }
+      tr.appendChild(achvTd);
+
+      const evalTd = document.createElement('td');
+      evalTd.appendChild(createEvaluationSelect(data.evaluation, val => {
+        data.evaluation = val;
+        saveData();
+      }));
+      tr.appendChild(evalTd);
+
+      const defTd = document.createElement('td');
+      defTd.appendChild(createInput(data.deficit, val => {
+        data.deficit = val;
+        saveData();
+      }));
+      tr.appendChild(defTd);
+
+      const noteTd = document.createElement('td');
+      noteTd.appendChild(createInput(data.notes, val => {
+        data.notes = val;
+        saveData();
+      }));
+      tr.appendChild(noteTd);
+
+      return tr;
+    };
+
+    studentsBody.appendChild(createRow('الأحد', student.sunday));
+    studentsBody.appendChild(createRow('الثلاثاء', student.tuesday));
+  });
+}}
+
 
     const studentsBody = document.getElementById('studentsBody');
     const datalist = document.getElementById('surahList');
@@ -228,6 +348,11 @@
     });
 
     document.getElementById('backBtn').onclick = () => window.history.back();
+
+    window.onload = () => {
+  initializeStudents();
+};
+
   </script>
 </body>
 </html>

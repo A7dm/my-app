@@ -89,15 +89,26 @@
   </div>
 
   <script>
-    // مفاتيح localStorage خاصة بصفحة الأحد
-    const attendancePointsKey = 'attendancePoints_week1_mon';
-    const uniformPointsKey = 'uniformPoints_week1_mon';
-    const attendanceRecordsKey = 'attendanceRecords_week1_mon';
-    const uniformRecordsKey = 'uniformRecords_week1_mon';
-    const totalScoresKey = 'totalScores_week1_mon';
+    // مفاتيح localStorage خاصة بصفحة الإثنين
+    const attendancePointsKey = 'attendancePoints_week2_الآحد';
+    const uniformPointsKey = 'uniformPoints_week2_الآحد';
+    const attendanceRecordsKey = 'attendanceRecords_week2_الآحد';
+    const uniformRecordsKey = 'uniformRecords_week2_الآحد';
+    const totalScoresKey = 'totalScores_week2_الآحد';
 
     const studentsBody = document.getElementById('studentsBody');
-    const students = JSON.parse(localStorage.getItem('students')) || [];
+    let students = [];
+
+    async function loadStudentsFromServer() {
+    try {
+      const res = await fetch('/students');
+      students = await res.json();
+      buildTable();
+    } catch (err) {
+      console.error('فشل تحميل الطلاب من الخادم:', err);
+      students = [];
+    }
+  }
 
     // استرجاع نقاط الحضور والزي الخاصة بهذه الصفحة فقط
     let attendancePoints = JSON.parse(localStorage.getItem(attendancePointsKey)) || {
@@ -246,7 +257,8 @@
     });
 
     // بدء التشغيل
-    buildTable();
+   loadStudentsFromServer();
+
 
     // زر العودة
     document.getElementById('backBtn').onclick = () => window.history.back();
