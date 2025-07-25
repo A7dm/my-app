@@ -4,7 +4,8 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
+
 
 // تحميل الطلاب من ملف JSON إذا موجود
 const studentsFile = path.join(__dirname, 'students.json');
