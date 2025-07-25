@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>قائمة الطلاب - الأسبوع  2  - الخميس</title>
+  <style>
+    body {
+      font-family: 'Tahoma', sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: auto;
+      margin: 20px auto;
+      border-collapse: collapse;
+      text-align: center;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    input[type="text"], select, input[list] {
+      width: 90%;
+      padding: 4px 6px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    #backBtn {
+      display: block;
+      margin: 10px auto 20px;
+      padding: 10px 15px;
+      font-size: 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      color: white;
+      background-color: #4285f4;
+    }
+    .save-confirm {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h2>قائمة جميع الطلاب - الأسبوع  2    - الخميس</h2>
+<button id="backBtn">العودة</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>رقم</th>
+      <th>الاسم</th>
+      <th>اليوم</th>
+      <th>من</th>
+      <th>الى</th>
+      <th>الإنجاز</th>
+      <th>التقييم</th>
+      <th>العجز (إن وجد)</th>
+      <th>ملاحظات</th>
+    </tr>
+  </thead>
+  <tbody id="studentsBody"></tbody>
+</table>
+
+<!--<div class="save-confirm" id="saveConfirm">تم الحفظ ✅</div>-->
+
+<datalist id="surahList">
+    <option value="الفاتحة"></option>
+    <option value="البقرة"></option>
+    <option value="آل عمران"></option>
+    <option value="النساء"></option>
+    <option value="المائدة"></option>
+    <option value="الأنعام"></option>
+    <option value="الأعراف"></option>
+    <option value="الأنفال"></option>
+    <option value="التوبة"></option>
+    <option value="يونس"></option>
+    <option value="هود"></option>
+    <option value="يوسف"></option>
+    <option value="الرعد"></option>
+    <option value="ابراهيم"></option>
+    <option value="الحجر"></option>
+    <option value="النحل"></option>
+    <option value="الإسراء"></option>
+    <option value="الكهف"></option>
+    <option value="مريم"></option>
+    <option value="طه"></option>
+    <option value="الأنبياء"></option>
+    <option value="الحج"></option>
+    <option value="المؤمنون"></option>
+    <option value="النّور"></option>
+    <option value="الفرقان"></option>
+    <option value="الشعراء"></option>
+    <option value="النّمل"></option>
+    <option value="القصص"></option>
+    <option value="العنكبوت"></option>
+    <option value="الرّوم"></option>
+    <option value="لقمان"></option>
+    <option value="السجدة"></option>
+    <option value="الأحزاب"></option>
+    <option value="سبأ"></option>
+    <option value="فاطر"></option>
+    <option value="يس"></option>
+    <option value="الصافات"></option>
+    <option value="ص"></option>
+    <option value="الزمر"></option>
+    <option value="غافر"></option>
+    <option value="فصلت"></option>
+    <option value="الشورى"></option>
+    <option value="الزخرف"></option>
+    <option value="الدخان"></option>
+    <option value="الجاثية"></option>
+    <option value="الأحقاف"></option>
+    <option value="محمد"></option>
+    <option value="الفتح"></option>
+    <option value="الحجرات"></option>
+    <option value="ق"></option>
+    <option value="الذاريات"></option>
+    <option value="الطور"></option>
+    <option value="النجم"></option>
+    <option value="القمر"></option>
+    <option value="الرحمن"></option>
+    <option value="الواقعة"></option>
+    <option value="الحديد"></option>
+    <option value="المجادلة"></option>
+    <option value="الحشر"></option>
+    <option value="الممتحنة"></option>
+    <option value="الصف"></option>
+    <option value="الجمعة"></option>
+    <option value="المنافقون"></option>
+    <option value="التغابن"></option>
+    <option value="الطلاق"></option>
+    <option value="التحريم"></option>
+    <option value="الملك"></option>
+    <option value="القلم"></option>
+    <option value="الحاقة"></option>
+    <option value="المعارج"></option>
+    <option value="نوح"></option>
+    <option value="الجن"></option>
+    <option value="المزّمّل"></option>
+    <option value="المدّثر"></option>
+    <option value="القيامة"></option>
+    <option value="الإنسان"></option>
+    <option value="المرسلات"></option>
+    <option value="النبأ"></option>
+    <option value="النازعات"></option>
+    <option value="عبس"></option>
+    <option value="التكوير"></option>
+    <option value="الإنفطار"></option>
+    <option value="المطفّفين"></option>
+    <option value="الإنشقاق"></option>
+    <option value="البروج"></option>
+    <option value="الطارق"></option>
+    <option value="الأعلى"></option>
+    <option value="الغاشية"></option>
+    <option value="الفجر"></option>
+    <option value="البلد"></option>
+    <option value="الشمس"></option>
+    <option value="الليل"></option>
+    <option value="الضحى"></option>
+    <option value="الشرح"></option>
+    <option value="التين"></option>
+    <option value="العلق"></option>
+    <option value="القدر"></option>
+    <option value="البينة"></option>
+    <option value="الزلزلة"></option>
+    <option value="العاديات"></option>
+    <option value="القارعة"></option>
+    <option value="التكاثر"></option>
+    <option value="العصر"></option>
+    <option value="الهمزة"></option>
+    <option value="الفيل"></option>
+    <option value="قريش"></option>
+    <option value="الماعون"></option>
+    <option value="الكوثر"></option>
+    <option value="الكافرون"></option>
+    <option value="النصر"></option>
+    <option value="المسد"></option>
+    <option value="الإخلاص"></option>
+    <option value="الفلق"></option>
+    <option value="الناس"></option>
+</datalist>
+
+<script>
+  function getStudents() {
+    return JSON.parse(localStorage.getItem('students')) || [
+      {username: 'محمد'},
+      {username: 'علي'},
+      {username: 'فاطمة'},
+      {username: 'عائشة'},
+    ];
+  }
+
+  function createCell(content, attrs = {}) {
+    const td = document.createElement('td');
+    if (typeof content === "string" || typeof content === "number") {
+      td.textContent = content;
+    } else {
+      td.appendChild(content);
+    }
+    for (const key in attrs) {
+      td.setAttribute(key, attrs[key]);
+    }
+    return td;
+  }
+
+  function createInputCell(type, listId, value) {
+    const input = document.createElement('input');
+    input.type = type;
+    if (listId) input.setAttribute('list', listId);
+    input.value = value || "";
+    input.style.textAlign = 'center';
+    return createCell(input);
+  }
+
+  function createCheckboxCell(checked) {
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = !!checked;
+    return createCell(input);
+  }
+
+  function createSelectCell(selectedValue) {
+    const select = document.createElement('select');
+    const options = [
+      "ممتاز", "جيد جدا", "جيد", "لم ينجز", "غياب",
+      "متأخر ولم يسمع", "إنجاز جزئي", "درس", "غاب ولكن عوض"
+    ];
+    const defaultOption = document.createElement('option');
+    defaultOption.value = "";
+    defaultOption.textContent = "اختر التقييم";
+    select.appendChild(defaultOption);
+
+    options.forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt;
+      option.textContent = opt;
+      if (opt === selectedValue) option.selected = true;
+      select.appendChild(option);
+    });
+
+    return createCell(select);
+  }
+
+  function createSurahCell(surahVal, noteVal) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '4px';
+
+    const surahInput = document.createElement('input');
+    surahInput.type = 'text';
+    surahInput.setAttribute('list', 'surahList');
+    surahInput.value = surahVal || "";
+    surahInput.placeholder = "اختر السورة";
+
+    const noteInput = document.createElement('input');
+    noteInput.type = 'text';
+    noteInput.value = noteVal || "";
+    noteInput.placeholder = "من";
+
+    container.appendChild(surahInput);
+    container.appendChild(noteInput);
+
+    return createCell(container);
+  }
+
+  function createFromToCell(mainVal, noteVal) {
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '4px';
+
+    const surahInput = document.createElement('input');
+    surahInput.type = 'text';
+    surahInput.setAttribute('list', 'surahList');
+    surahInput.value = mainVal || "";
+    surahInput.placeholder = "اختر السورة";
+
+    const noteInput = document.createElement('input');
+    noteInput.type = 'text';
+    noteInput.value = noteVal || "";
+    noteInput.placeholder = "إلى";
+
+    container.appendChild(surahInput);
+    container.appendChild(noteInput);
+
+    return createCell(container);
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('studentsBody');
+    tbody.innerHTML = "";
+    let students = getStudents();
+
+    students.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
+
+    const savedData = JSON.parse(localStorage.getItem('students_weekend2_الخميس')) || {};
+
+    students.forEach((student, index) => {
+      const data = savedData[student.username] || {};
+      const mon = data["الخميس"] || {};
+
+      const tr = document.createElement('tr');
+      tr.appendChild(createCell(index + 1));
+      tr.appendChild(createCell(student.username));
+      tr.appendChild(createCell("الخميس"));
+
+      const surahCell = createSurahCell(mon.surah, mon.surahNote);
+      const fromToCell = createFromToCell(mon.fromTo, mon.fromToNote);
+
+      tr.appendChild(surahCell);
+      tr.appendChild(fromToCell);
+      tr.appendChild(createCheckboxCell(mon.progress));
+      tr.appendChild(createSelectCell(mon.rating));
+      tr.appendChild(createInputCell("text", null, mon.deficit));
+      tr.appendChild(createInputCell("text", null, mon.notes));
+
+      tbody.appendChild(tr);
+
+      // ✅ التحديث التلقائي من "من" إلى "إلى"
+      const surahFromInput = surahCell.querySelectorAll('input')[0];
+      const surahToInput = fromToCell.querySelectorAll('input')[0];
+
+      surahFromInput.addEventListener('input', () => {
+        if (surahToInput.value.trim() === '') {
+          surahToInput.value = surahFromInput.value;
+          saveData();
+        }
+      });
+    });
+
+    addAutoSaveListeners();
+  }
+
+  function saveData() {
+    const tbody = document.getElementById('studentsBody');
+    const rows = tbody.querySelectorAll('tr');
+    const data = {};
+
+    rows.forEach(row => {
+      const username = row.cells[1].textContent;
+
+      const monSurahInputs = row.cells[3].querySelectorAll('input');
+      const monFromToInputs = row.cells[4].querySelectorAll('input');
+      const monProgress = row.cells[5].querySelector('input');
+      const monRating = row.cells[6].querySelector('select');
+      const monDeficit = row.cells[7].querySelector('input');
+      const monNotes = row.cells[8].querySelector('input');
+
+      data[username] = {
+        "الخميس": {
+          surah: monSurahInputs[0].value,
+          surahNote: monSurahInputs[1].value,
+          fromTo: monFromToInputs[0].value,
+          fromToNote: monFromToInputs[1].value,
+          progress: monProgress.checked,
+          rating: monRating.value,
+          deficit: monDeficit.value,
+          notes: monNotes.value,
+        }
+      };
+    });
+
+    localStorage.setItem('students_weekend2_الخميس', JSON.stringify(data));
+
+    const confirm = document.getElementById('saveConfirm');
+    confirm.style.display = 'block';
+    setTimeout(() => {
+      confirm.style.display = 'none';
+    }, 2000);
+  }
+
+  function addAutoSaveListeners() {
+    const tbody = document.getElementById('studentsBody');
+    const inputs = tbody.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        saveData();
+      });
+      if (input.type === "checkbox") {
+        input.addEventListener('change', () => {
+          saveData();
+        });
+      }
+    });
+  }
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    window.location.href = '/button2/eday/eDay.html';
+  });
+
+  renderTable();
+</script>
+
+</body>
+</html>

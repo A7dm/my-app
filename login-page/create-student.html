@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>إنشاء حساب طالب جديد</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: 'Tahoma', sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .wrapper{
+      display:flex;
+      flex-direction: column;
+      gap:20px;
+    }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 350px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 17px;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+    }
+
+    .back-button{
+    padding:10px;
+    width:90%;
+    margin-right:15px;
+    
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <h2>إنشاء حساب طالب جديد</h2>
+      <input type="text" id="username" placeholder="اسم المستخدم" />
+      <input type="password" id="password" placeholder="كلمة المرور" />
+      <button id="createBtn">إنشاء الحساب</button>
+      <p id="message"></p>
+    </div>
+
+
+    <div class="div-back">
+      <button class="back-button" onclick="window.location.href='teacher-dashboard.html'">عودة</button>
+    </div>
+  </div>
+
+  <script>
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const createBtn = document.getElementById('createBtn');
+    const message = document.getElementById('message');
+
+    createBtn.addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (!username || !password) {
+        alert('يرجى إدخال اسم المستخدم وكلمة المرور');
+        return;
+      }
+
+      let students = JSON.parse(localStorage.getItem('students')) || [];
+
+      if (students.some(s => s.username === username)) {
+        alert('اسم المستخدم موجود بالفعل. يرجى اختيار اسم آخر.');
+        return;
+      }
+
+      students.push({ username, password });
+      localStorage.setItem('students', JSON.stringify(students));
+
+      message.textContent = 'تم إنشاء الحساب بنجاح!';
+
+      usernameInput.value = '';
+      passwordInput.value = '';
+    });
+  </script>
+
+</body>
+</html>

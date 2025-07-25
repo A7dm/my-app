@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>جميع الطلاب - الثلاثاء</title>
+  <style>
+    body {
+      font-family: 'Tahoma', sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: auto;
+      margin: 20px auto;
+      border-collapse: collapse;
+      text-align: center;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      white-space: nowrap;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    #backBtn {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px 15px;
+      font-size: 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background-color: #4285f4;
+      color: white;
+    }
+    select, input[type="number"] {
+      padding: 5px;
+      font-size: 14px;
+    }
+    input[readonly] {
+      background-color: #e9ecef;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>قائمة جميع الطلاب - الثلاثاء</h2>
+  <button id="backBtn">العودة</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>الرقم</th>
+        <th>اسم الطالب</th>
+        <th>الحضور</th>
+        <th>الزي</th>
+        <th>المجموع</th>
+      </tr>
+    </thead>
+    <tbody id="studentsBody"></tbody>
+  </table>
+
+  <!-- تحديد نقاط لكل حالة -->
+  <div style="text-align:center; margin-top: 30px;">
+    <h3>تحديد نقاط لكل حالة</h3>
+    <div>
+      <label>الحضور:</label>
+      <input type="number" id="presentPoint" placeholder="حاضر" min="0" value="10" style="width:60px;"/>
+      <input type="number" id="absentPoint" placeholder="غائب" min="0" value="-10" style="width:60px;"/>
+      <input type="number" id="latePoint" placeholder="متأخر" min="0" value="5" style="width:60px;"/>
+      <input type="number" id="excusedPoint" placeholder="معتذر" min="0" value="0" style="width:60px;"/>
+    </div>
+    <div style="margin-top:10px;">
+      <label>الزي:</label>
+      <input type="number" id="uniformPoint" placeholder="زي" min="0" value="10" style="width:60px;"/>
+      <input type="number" id="noUniformPoint" placeholder="بدون زي" min="0" value="-10" style="width:60px;"/>
+    </div>
+    <button id="savePointsBtn" style="margin-top:10px; padding:5px 15px;">حفظ النقاط</button>
+  </div>
+
+  <script>
+    // مفاتيح localStorage خاصة بصفحة الأحد
+    const attendancePointsKey = 'attendancePoints_week2_الثلاثاء';
+    const uniformPointsKey = 'uniformPoints_week2_الثلاثاء';
+    const attendanceRecordsKey = 'attendanceRecords_week2_الثلاثاء';
+    const uniformRecordsKey = 'uniformRecords_week2_الثلاثاء';
+    const totalScoresKey = 'totalScores_week2_الثلاثاء';
+
+    const studentsBody = document.getElementById('studentsBody');
+    const students = JSON.parse(localStorage.getItem('students')) || [];
+
+    // استرجاع نقاط الحضور والزي الخاصة بهذه الصفحة فقط
+    let attendancePoints = JSON.parse(localStorage.getItem(attendancePointsKey)) || {
+      'حاضر': 10,
+      'غائب': -10,
+      'متأخر': 5,
+      'معتذر': 0,
+      '': 0
+    };
+    let uniformPoints = JSON.parse(localStorage.getItem(uniformPointsKey)) || {
+      'زي': 10,
+      'بدون زي': -10,
+      '': 0
+    };
+
+    // حفظ النقاط لكل طالب
+    let totalScores = JSON.parse(localStorage.getItem(totalScoresKey)) || {};
+
+    // استرجاع الحضور والزي لكل طالب
+    let attendanceRecords = JSON.parse(localStorage.getItem(attendanceRecordsKey)) || {};
+    let uniformRecords = JSON.parse(localStorage.getItem(uniformRecordsKey)) || {};
+
+    // عرض النقاط الحالية في الحقول للتحكم بها
+    document.getElementById('presentPoint').value = attendancePoints['حاضر'];
+    document.getElementById('absentPoint').value = attendancePoints['غائب'];
+    document.getElementById('latePoint').value = attendancePoints['متأخر'];
+    document.getElementById('excusedPoint').value = attendancePoints['معتذر'];
+    document.getElementById('uniformPoint').value = uniformPoints['زي'];
+    document.getElementById('noUniformPoint').value = uniformPoints['بدون زي'];
+
+    // دالة لحساب المجموع حسب الحضور والزي
+    function calculateTotal(username) {
+      const attendance = attendanceRecords[username] || '';
+      const uniform = uniformRecords[username] || '';
+      const attPoint = attendancePoints[attendance] || 0;
+      const uniPoint = uniformPoints[uniform] || 0;
+      return attPoint + uniPoint;
+    }
+
+    // دالة تحديث مجموع طالب معين حسب اسمه
+    function updateTotalForRow(username) {
+      const rows = studentsBody.querySelectorAll('tr');
+      rows.forEach(row => {
+        const nameCell = row.children[1];
+        if (nameCell && nameCell.textContent === username) {
+          const totalInput = row.querySelector('input[type="number"][readonly]');
+          if (totalInput) {
+            const newTotal = calculateTotal(username);
+            totalInput.value = newTotal;
+            totalScores[username] = newTotal;
+            localStorage.setItem(totalScoresKey, JSON.stringify(totalScores));
+          }
+        }
+      });
+    }
+
+    // دالة تحديث الجدول مع ترتيب أسماء الطلاب أبجدياً
+    function buildTable() {
+      // ترتيب الطلاب حسب الاسم أبجدياً (عربي)
+      students.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
+
+      studentsBody.innerHTML = '';
+      students.forEach((student, index) => {
+        const row = document.createElement('tr');
+
+        // عمود الرقم
+        const numberTd = document.createElement('td');
+        numberTd.textContent = index + 1;
+        row.appendChild(numberTd);
+
+        // اسم الطالب
+        const nameTd = document.createElement('td');
+        nameTd.textContent = student.username;
+        row.appendChild(nameTd);
+
+        // الحضور
+        const attendanceTd = document.createElement('td');
+        const attendanceSelect = document.createElement('select');
+        const attendanceOptions = ['', 'حاضر', 'غائب', 'متأخر', 'معتذر'];
+        attendanceOptions.forEach(status => {
+          const option = document.createElement('option');
+          option.value = status;
+          option.textContent = status === '' ? '--اختر--' : status;
+          attendanceSelect.appendChild(option);
+        });
+        attendanceSelect.value = attendanceRecords[student.username] || '';
+        attendanceSelect.addEventListener('change', () => {
+          attendanceRecords[student.username] = attendanceSelect.value;
+          localStorage.setItem(attendanceRecordsKey, JSON.stringify(attendanceRecords));
+          updateTotalForRow(student.username);
+        });
+        attendanceTd.appendChild(attendanceSelect);
+        row.appendChild(attendanceTd);
+
+        // الزي
+        const uniformTd = document.createElement('td');
+        const uniformSelect = document.createElement('select');
+        const uniformOptions = ['', 'زي', 'بدون زي'];
+        uniformOptions.forEach(status => {
+          const option = document.createElement('option');
+          option.value = status;
+          option.textContent = status === '' ? '--اختر--' : status;
+          uniformSelect.appendChild(option);
+        });
+        uniformSelect.value = uniformRecords[student.username] || '';
+        uniformSelect.addEventListener('change', () => {
+          uniformRecords[student.username] = uniformSelect.value;
+          localStorage.setItem(uniformRecordsKey, JSON.stringify(uniformRecords));
+          updateTotalForRow(student.username);
+        });
+        uniformTd.appendChild(uniformSelect);
+        row.appendChild(uniformTd);
+
+        // المجموع (مربع readonly)
+        const totalTd = document.createElement('td');
+        const totalInput = document.createElement('input');
+        totalInput.type = 'number';
+        totalInput.readOnly = true;
+        totalInput.style.width = '60px';
+        totalInput.value = calculateTotal(student.username);
+        totalScores[student.username] = totalInput.value; // حفظ القيمة عند البناء
+        totalTd.appendChild(totalInput);
+        row.appendChild(totalTd);
+
+        studentsBody.appendChild(row);
+      });
+      localStorage.setItem(totalScoresKey, JSON.stringify(totalScores));
+    }
+
+    // زر حفظ النقاط في الواجهة
+    document.getElementById('savePointsBtn').addEventListener('click', () => {
+      attendancePoints['حاضر'] = Number(document.getElementById('presentPoint').value) || 0;
+      attendancePoints['غائب'] = Number(document.getElementById('absentPoint').value) || 0;
+      attendancePoints['متأخر'] = Number(document.getElementById('latePoint').value) || 0;
+      attendancePoints['معتذر'] = Number(document.getElementById('excusedPoint').value) || 0;
+      uniformPoints['زي'] = Number(document.getElementById('uniformPoint').value) || 0;
+      uniformPoints['بدون زي'] = Number(document.getElementById('noUniformPoint').value) || 0;
+
+      // حفظ النقاط في مفتاح خاص بهذه الصفحة فقط
+      localStorage.setItem(attendancePointsKey, JSON.stringify(attendancePoints));
+      localStorage.setItem(uniformPointsKey, JSON.stringify(uniformPoints));
+
+      // إعادة حساب جميع الطلاب في هذه الصفحة فقط
+      students.forEach(s => updateTotalForRow(s.username));
+      alert('تم حفظ النقاط وتحديث المجموع!');
+    });
+
+    // بدء التشغيل
+    buildTable();
+
+    // زر العودة
+    document.getElementById('backBtn').onclick = () => window.history.back();
+
+  </script>
+
+</body>
+</html>

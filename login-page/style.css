@@ -1,0 +1,63 @@
+body {
+  font-family: 'Tahoma', sans-serif;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.account-type button {
+  margin: 5px;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  background-color: #eee;
+}
+
+.account-type button.active {
+  background-color: #4285f4;
+  color: white;
+}
+
+form {
+  margin-top: 20px;
+}
+
+input {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+button[type="submit"] {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 5px;
+}
+
+.note {
+  font-size: 13px;
+  color: #666;
+  margin-top: 15px;
+}
+
+.account-message {
+  font-size: 15px;
+  margin-top: 10px;
+}
+

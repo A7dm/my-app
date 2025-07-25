@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>جدولك القرآني</title>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    .week-table {
+      margin-bottom: 40px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      text-align: center;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      white-space: nowrap;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    #backBtn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>جدولك القرآني</h2>
+  <div id="tablesContainer"></div>
+  <button id="backBtn" onclick="history.back()">رجوع</button>
+
+  <script>
+    const username = localStorage.getItem('loggedInUsername');
+    if (!username) {
+      alert("الرجاء تسجيل الدخول أولاً.");
+      window.location.href = "../student-dashboard.html";
+    }
+
+    const tablesContainer = document.getElementById("tablesContainer");
+
+    // استخراج جميع المفاتيح من localStorage التي تحتوي على بيانات الأسابيع
+    const allKeys = Object.keys(localStorage);
+    const weekNumbers = [];
+
+    allKeys.forEach(key => {
+      const match = key.match(/^students_weeks(\d+)$/);
+      if (match) {
+        weekNumbers.push(parseInt(match[1]));
+      }
+    });
+
+    // فرز الأرقام تصاعدياً
+    weekNumbers.sort((a, b) => a - b);
+
+    // توليد الجدول لكل أسبوع مع دمج عطلة نهاية الأسبوع
+    weekNumbers.forEach(weekNumber => {
+      const weekKey = `students_weeks${weekNumber}`;
+      const weekendKey = `students_weekend${weekNumber}`;
+
+      const students = JSON.parse(localStorage.getItem(weekKey)) || [];
+      const weekendData = JSON.parse(localStorage.getItem(weekendKey)) || {};
+
+      const student = students.find(s => s.username === username);
+      const weekendStudent = weekendData[username] || {};
+
+      if (!student && Object.keys(weekendStudent).length === 0) return;
+
+      const div = document.createElement('div');
+      div.classList.add('week-table');
+
+      const title = document.createElement('h3');
+      title.textContent = `الأسبوع ${weekNumber}`;
+      div.appendChild(title);
+
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>اليوم</th>
+          <th>السورة</th>
+          <th>من-إلى</th>
+          <th>الإنجاز</th>
+          <th>التقييم</th>
+          <th>العجز</th>
+          <th>ملاحظات</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+
+      const days = [
+        { label: "الأحد", data: student?.sunday },
+        { label: "الإثنين", data: weekendStudent["الإثنين"], isWeekend: true },
+        { label: "الثلاثاء", data: student?.tuesday },
+        { label: "الأربعاء", data: weekendStudent["الأربعاء"], isWeekend: true }
+      ];
+
+      days.forEach(({ label, data, isWeekend }) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${label}</td>
+          <td>${data?.surah || "-"}
+            ${data?.surahNote ? `<br><small style="color: gray;">${data.surahNote}</small>` : ""}
+            </td>
+          <td>${data?.fromTo || "-"}
+            ${data?.fromToNote ? `<br><small style="color: gray;">${data.fromToNote}</small>` : ""}
+            </td>
+          <td>${isWeekend ? (data?.progress ? "✔️" : "❌") : (data?.achievement ? "✔️" : "❌")}</td>
+          <td>${data?.rating || data?.evaluation || "-"}</td>
+          <td>${data?.deficit || "-"}</td>
+          <td>${data?.notes || "-"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      div.appendChild(table);
+      tablesContainer.appendChild(div);
+    });
+  </script>
+</body>
+</html>

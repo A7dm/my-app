@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>الإنجاز اليومي</title>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    .week-table {
+      margin-bottom: 40px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      text-align: center;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      white-space: nowrap;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    #backBtn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>الإنجاز اليومي</h2>
+  <div id="tablesContainer"></div>
+  <button id="backBtn" onclick="history.back()">رجوع</button>
+
+  <script>
+    const username = localStorage.getItem('loggedInUsername');
+    if (!username) {
+      alert("الرجاء تسجيل الدخول أولاً.");
+      window.location.href = "../student-dashboard.html";
+    }
+
+    const tablesContainer = document.getElementById("tablesContainer");
+
+    // الحصول على كل المفاتيح اللي فيها بيانات أسابيع وأيام
+    const allKeys = Object.keys(localStorage);
+    const weekNumbersSet = new Set();
+
+    allKeys.forEach(key => {
+      const match = key.match(/^students_weekend(\d+)_/);
+      if (match) {
+        weekNumbersSet.add(parseInt(match[1]));
+      }
+    });
+
+    const weekNumbers = Array.from(weekNumbersSet).sort((a, b) => a - b);
+
+    const daysLabels = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء","الخميس","الجمعة","السبت"];
+
+    weekNumbers.forEach(weekNumber => {
+      const div = document.createElement('div');
+      div.classList.add('week-table');
+
+      const title = document.createElement('h3');
+      title.textContent = `الأسبوع ${weekNumber}`;
+      div.appendChild(title);
+
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>اليوم</th>
+          <th>السورة</th>
+          <th>من-إلى</th>
+          <th>الإنجاز</th>
+          <th>التقييم</th>
+          <th>العجز</th>
+          <th>ملاحظات</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+
+      daysLabels.forEach(day => {
+        const dayKey = `students_weekend${weekNumber}_${day}`;
+        let rawData = localStorage.getItem(dayKey);
+
+        if (!rawData) return; // إذا ما فيه بيانات
+
+        let dataList = JSON.parse(rawData);
+
+        // إذا البيانات مخزنة ككائن (object) نحولها لمصفوفة
+        if (dataList && typeof dataList === 'object' && !Array.isArray(dataList)) {
+          // dataList هو كائن: اسم الطالب كمفتاح، والقيمة بيانات الأيام
+          dataList = Object.entries(dataList).map(([studName, daysData]) => {
+            // ارجع كائن مع اسم الطالب والبيانات ليوم اليوم الحالي (day)
+            return {
+              username: studName,
+              ...daysData[day]
+            };
+          });
+        }
+
+        if (!Array.isArray(dataList)) {
+          dataList = [];
+        }
+
+        // ابحث عن بيانات الطالب المسجل فقط
+        const studentData = dataList.find(s => s.username === username);
+        if (!studentData) return;
+
+        // عرض البيانات في صف
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${day}</td>
+          <td>${studentData.surah || "-"}${studentData.surahNote ? `<br><small style="color: gray;">${studentData.surahNote}</small>` : ""}</td>
+          <td>${studentData.fromTo || "-"}${studentData.fromToNote ? `<br><small style="color: gray;">${studentData.fromToNote}</small>` : ""}</td>
+          <td>${studentData.progress || studentData.achievement ? "✔️" : "❌"}</td>
+          <td>${studentData.rating || studentData.evaluation || "-"}</td>
+          <td>${studentData.deficit || "-"}</td>
+          <td>${studentData.notes || "-"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      div.appendChild(table);
+      tablesContainer.appendChild(div);
+    });
+  </script>
+</body>
+</html>

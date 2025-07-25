@@ -1,0 +1,384 @@
+
+المسابقة القرآنية
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>جميع الطلاب</title>
+  <style>
+    /* نفس التنسيقات السابقة */
+    .white-box {
+      background-color: rgb(0, 140, 255);
+      width: 100%;
+      height: 100px;
+      margin-top: 0;
+      padding-top: 0;
+      position: relative;
+    }
+    .cs-weeks {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      margin: 0;
+      font-size: 50px;
+      color: white;
+      direction: ltr;
+    }
+    .cs-add-week {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      padding: 10px;
+      background-color: black;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .cs-add-week:hover {
+      background-color: #333;
+    }
+    .cs-new-week {
+      padding: 10px 10px;
+      font-size: 20px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      direction: rtl;
+    }
+    .week-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .week-name {
+      font-weight: bold;
+    }
+    .action-btn {
+      margin-left: 10px;
+      padding: 5px 8px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      color: white;
+    }
+    .delete-btn {
+      background-color: #e74c3c;
+    }
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+    .edit-btn {
+      background-color: #3498db;
+    }
+    .edit-btn:hover {
+      background-color: #2980b9;
+    }
+    .day-list {
+      margin-top: 10px;
+      padding-right: 20px;
+      display: none;
+    }
+    .day-item {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 5px;
+    }
+    .day-name {
+      flex-grow: 1;
+      font-size: 18px;
+    }
+    .add-day-btn {
+      margin-top: 8px;
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background-color: #27ae60;
+      color: white;
+      display: none;
+    }
+    .add-day-btn:hover {
+      background-color: #1e8449;
+    }
+    input.edit-input {
+      font-size: 16px;
+      padding: 4px;
+      width: 150px;
+    }
+    .open-day-btn {
+      background-color: #2ecc71;
+      margin-left: 10px;
+      padding: 5px 8px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    .open-day-btn:hover {
+      background-color: #27ae60;
+    }
+
+    .back-div{
+      display:flex;
+      justify-content: center;
+    }
+
+    .back-button{
+      font-size:25px;
+      background-color:rgb(0, 140, 255);
+      border:none;
+      color:white;
+      padding: 5px 20px;
+      cursor:pointer;
+      border-radius:5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="white-box">
+    <div class="cs-weeks">الأسابيع
+      <button class="cs-add-week" onclick="addWeeks()">اضافة اسبوع جديد</button>
+    </div>
+  </div>
+  <div id="js-div"></div>
+
+  <div class="back-div">
+    <button class="back-button" onclick="
+      window.location.href='teacher-dashboard.html'
+      ">رجوع</button>
+  </div>
+
+  <!-- في داخل <script> -->
+
+<script>
+  let weekscount = 0;
+  const defaultDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء'];
+
+  function addWeeks() {
+    weekscount++;
+    const newDiv = document.createElement('div');
+    newDiv.className = 'cs-new-week';
+    const currentWeekNumber = weekscount;
+
+    newDiv.innerHTML = `
+      <div class="week-header" onclick="toggleDays(this)">
+        <span class="week-name">أسبوع ${currentWeekNumber}</span>
+        <div>
+          <button class="action-btn edit-btn" onclick="event.stopPropagation(); editWeek(this)">تعديل</button>
+          <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteWeek(this)">حذف</button>
+        </div>
+      </div>
+      <div class="day-list"></div>
+      <button class="add-day-btn" onclick="event.stopPropagation(); addDay(this, ${currentWeekNumber})">+ إضافة يوم جديد</button>
+    `;
+
+    const dayList = newDiv.querySelector('.day-list');
+    defaultDays.forEach(day => {
+      const dayDiv = createDayElement(day, currentWeekNumber);
+      dayList.appendChild(dayDiv);
+    });
+
+    document.getElementById('js-div').appendChild(newDiv);
+    saveData();
+  }
+
+  // دالة إنشاء يوم مع رقم الأسبوع
+  function createDayElement(dayName, weekNumber) {
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'day-item';
+
+    dayDiv.innerHTML = `
+      <span class="day-name">${dayName}</span>
+      <button class="action-btn edit-btn" onclick="event.stopPropagation(); editDay(this)">تعديل</button>
+      <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteDay(this)">حذف</button>
+      <button class="open-day-btn" onclick="event.stopPropagation(); openDay(${weekNumber}, '${dayName}')">فتح اليوم</button>
+    `;
+    return dayDiv;
+  }
+
+  // فتح صفحة اليوم بناءً على رقم الأسبوع واسم اليوم
+  function openDay(weekNumber, dayName) {
+    const fileName = `weeks/week${weekNumber}/week${weekNumber}_${dayName}.html`;
+    window.location.href = fileName;
+  }
+
+  function deleteWeek(button) {
+    button.parentElement.parentElement.parentElement.remove();
+    saveData();
+  }
+
+  function editWeek(button) {
+    const parentDiv = button.parentElement.parentElement;
+    const span = parentDiv.querySelector('.week-name');
+
+    if (button.textContent === 'تعديل') {
+      const currentText = span.textContent;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentText;
+      input.className = 'edit-input';
+
+      parentDiv.insertBefore(input, span);
+      parentDiv.removeChild(span);
+
+      button.textContent = 'حفظ';
+    } else {
+      const input = parentDiv.querySelector('input.edit-input');
+      const newText = input.value.trim() || 'أسبوع';
+
+      const newSpan = document.createElement('span');
+      newSpan.className = 'week-name';
+      newSpan.textContent = newText;
+
+      parentDiv.insertBefore(newSpan, input);
+      parentDiv.removeChild(input);
+
+      button.textContent = 'تعديل';
+      saveData();
+    }
+  }
+
+  function deleteDay(button) {
+    button.parentElement.remove();
+    saveData();
+  }
+
+  function addDay(button, weekNumber) {
+    const weekDiv = button.parentElement;
+    const dayList = weekDiv.querySelector('.day-list');
+
+    let newDayName = prompt('أدخل اسم اليوم الجديد:');
+    if (newDayName) {
+      newDayName = newDayName.trim();
+      if (newDayName.length === 0) return;
+
+      const dayDiv = createDayElement(newDayName, weekNumber);
+      dayList.appendChild(dayDiv);
+      saveData();
+    }
+  }
+
+  function editDay(button) {
+    const parentDiv = button.parentElement;
+    const span = parentDiv.querySelector('.day-name');
+
+    if (button.textContent === 'تعديل') {
+      const currentText = span.textContent;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentText;
+      input.className = 'edit-input';
+
+      parentDiv.insertBefore(input, span);
+      parentDiv.removeChild(span);
+
+      button.textContent = 'حفظ';
+    } else {
+      const input = parentDiv.querySelector('input.edit-input');
+      const newText = input.value.trim() || 'يوم';
+
+      const newSpan = document.createElement('span');
+      newSpan.className = 'day-name';
+      newSpan.textContent = newText;
+
+      parentDiv.insertBefore(newSpan, input);
+      parentDiv.removeChild(input);
+
+      button.textContent = 'تعديل';
+      saveData();
+    }
+  }
+
+  function toggleDays(weekHeaderDiv) {
+    const weekDiv = weekHeaderDiv.parentElement;
+    const dayList = weekDiv.querySelector('.day-list');
+    const addDayBtn = weekDiv.querySelector('.add-day-btn');
+
+    if (dayList.style.display === 'none' || dayList.style.display === '') {
+      dayList.style.display = 'block';
+      addDayBtn.style.display = 'inline-block';
+    } else {
+      dayList.style.display = 'none';
+      addDayBtn.style.display = 'none';
+    }
+  }
+
+  function saveData() {
+    const weeks = [];
+    const weeksDiv = document.getElementById('js-div');
+    for (let i = 0; i < weeksDiv.children.length; i++) {
+      const weekDiv = weeksDiv.children[i];
+      const weekNameElem = weekDiv.querySelector('.week-name');
+      if (!weekNameElem) continue;
+      const weekName = weekNameElem.textContent;
+
+      const dayList = weekDiv.querySelectorAll('.day-item .day-name');
+      const days = [];
+      dayList.forEach(day => days.push(day.textContent));
+
+      const daysVisible = weekDiv.querySelector('.day-list').style.display === 'block';
+
+      weeks.push({ weekName, days, daysVisible });
+    }
+    localStorage.setItem('weeksData', JSON.stringify(weeks));
+  }
+
+  function loadData() {
+    const data = localStorage.getItem('weeksData');
+    if (!data) return;
+    const weeks = JSON.parse(data);
+
+    weekscount = weeks.length;
+
+    const container = document.getElementById('js-div');
+    container.innerHTML = '';
+
+    weeks.forEach((week, index) => {
+      const weekNumber = index + 1;
+      const newDiv = document.createElement('div');
+      newDiv.className = 'cs-new-week';
+
+      newDiv.innerHTML = `
+        <div class="week-header" onclick="toggleDays(this)">
+          <span class="week-name">${week.weekName}</span>
+          <div>
+            <button class="action-btn edit-btn" onclick="event.stopPropagation(); editWeek(this)">تعديل</button>
+            <button class="action-btn delete-btn" onclick="event.stopPropagation(); deleteWeek(this)">حذف</button>
+          </div>
+        </div>
+        <div class="day-list"></div>
+        <button class="add-day-btn" onclick="event.stopPropagation(); addDay(this, ${weekNumber})">+ إضافة يوم جديد</button>
+      `;
+
+      const dayListDiv = newDiv.querySelector('.day-list');
+      week.days.forEach(day => {
+        const dayDiv = createDayElement(day, weekNumber);
+        dayListDiv.appendChild(dayDiv);
+      });
+
+      if (week.daysVisible) {
+        dayListDiv.style.display = 'block';
+        newDiv.querySelector('.add-day-btn').style.display = 'inline-block';
+      }
+
+      container.appendChild(newDiv);
+    });
+  }
+
+  window.onload = loadData;
+</script>
+
+</body>
+</html>
+
+

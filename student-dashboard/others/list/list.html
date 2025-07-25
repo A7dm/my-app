@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <title>قائمة</title>
+
+    <style>
+
+      body , html{
+        padding:0;
+        margin:0;
+      }
+
+      input{
+        margin-top:10px;
+        height:30px;
+        width:200px;
+        
+      }
+      button{
+        cursor:pointer;
+      }
+
+
+    .cs-new{
+      display: grid;
+      grid-template-columns: 250px 220px 199px 60px;
+      align-items:center;
+    }
+
+     .deleteButton{
+        background-color: red;
+        color:white;
+        border:none;
+        padding:0;
+        height:30px;
+        line-height:20px;
+        margin-top:10px
+      }
+
+      .cs-input{
+        display:grid;
+        align-items:center;
+         align-items:stretch;
+         grid-template-columns: 220px 210px 199px 60px;
+         column-gap:10px;
+         padding:10px;
+      }
+
+       .addbutton{
+        background-color:green;
+        color:white;
+        border:none;
+        height:30px;
+        margin-top:12px;
+        
+       
+        
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="cs-input">
+    <input placeholder="أكتب هنا" id="input-name">
+    <input type="date" id="js-date">
+    <input type="time" id="js-time" onkeydown="
+    if(event.key==='Enter'){start()}
+    ">
+    <button class="addbutton" onclick="
+    start();
+    ">حفظ</button>
+    </div>
+
+
+    <div id="newText"></div>
+
+
+    <script>
+      const username = localStorage.getItem('loggedInUsername') || 'ضيف';
+
+
+      let x = JSON.parse(localStorage.getItem(`${username}-list`)) ||[];
+
+      function ros1(){
+        html1='';
+        for(let i=0 ; i<x.length;i++){
+          let o = x[i]
+          
+          const html= `
+          <div class="cs-new"> <p> ${o.name} </p><p> ${o.date}</p><p> ${o.time}</p>
+           
+            
+            <button class=deleteButton onclick="
+            x.splice(${i} , 1) ;
+            ros1();
+            
+            ">حذف </button> </div>
+          `
+          html1+=html;
+          document.getElementById('newText').innerHTML =html1
+        }
+        document.getElementById('newText').innerHTML =html1
+        localStorage.setItem(`${username}-list`,JSON.stringify(x));
+      }
+
+      function start(){
+        let a = document.getElementById('input-name')
+        name=a.value;
+
+        let b = document.getElementById(`js-date`);
+        date=b.value;
+
+        let c = document.getElementById('js-time');
+        time=c.value;
+
+        x.push({name:name , date:date , time:time})
+        
+        c.value=''
+        b.value=''
+        a.value=''
+        ros1()
+        
+      }
+      window.onload = ros1;
+
+
+    </script>
+
+  </body>
+</html>

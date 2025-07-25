@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>المسابقة القرآنية - المراجعة</title>
+  <style>
+    .white-box {
+      background-color: rgb(0, 140, 255);
+      width: 100%;
+      height: 100px;
+      margin-top: 0;
+      padding-top: 0;
+      position: relative;
+    }
+    .cs-weeks {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      margin: 0;
+      font-size: 50px;
+      color: white;
+      direction: ltr;
+    }
+    .cs-add-week {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      padding: 10px;
+      background-color: black;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .cs-add-week:hover {
+      background-color: #333;
+    }
+    .cs-new-week {
+      padding: 10px 10px;
+      font-size: 20px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      direction: rtl;
+    }
+    .week-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .week-name {
+      font-weight: bold;
+    }
+    .action-btn {
+      margin-left: 10px;
+      padding: 5px 8px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      color: white;
+    }
+    .delete-btn {
+      background-color: #e74c3c;
+    }
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+    .edit-btn {
+      background-color: #3498db;
+    }
+    .edit-btn:hover {
+      background-color: #2980b9;
+    }
+    input.edit-input {
+      font-size: 16px;
+      padding: 4px;
+      width: 150px;
+    }
+
+    .back-div{
+      display:flex;
+      justify-content: center;
+    }
+
+    .back-button{
+      font-size:25px;
+      background-color:rgb(0, 140, 255);
+      border:none;
+      color:white;
+      padding: 5px 20px;
+      cursor:pointer;
+      border-radius:5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="white-box">
+    <div class="cs-weeks">المراجعة
+      <button class="cs-add-week" onclick="addWeeks()">اضافة اسبوع جديد</button>
+    </div>
+  </div>
+  <div id="js-div"></div>
+
+  <div class="back-div">
+    <button class="back-button" onclick="
+      window.location.href='/button2/الورد القرآني.html'
+      ">رجوع</button>
+  </div>
+
+  <script>
+    let weekscount = 0;
+
+    function addWeeks() {
+      weekscount++;
+      const newDiv = document.createElement('div');
+      newDiv.className = 'cs-new-week';
+
+      newDiv.innerHTML = `
+        <div class="week-header">
+          <a href="weeks/weekend${weekscount}.html" class="week-name" style="text-decoration:none; color:inherit;">أسبوع ${weekscount}</a>
+          <div>
+            <button class="action-btn edit-btn" onclick="editWeek(this)">تعديل</button>
+            <button class="action-btn delete-btn" onclick="deleteWeek(this)">حذف</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('js-div').appendChild(newDiv);
+      saveData();
+    }
+
+    function editWeek(button) {
+      const parentDiv = button.closest('.week-header');
+      const link = parentDiv.querySelector('.week-name');
+
+      if (button.textContent === 'تعديل') {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = link.textContent;
+        input.className = 'edit-input';
+        parentDiv.insertBefore(input, link);
+        link.remove();
+        button.textContent = 'حفظ';
+      } else {
+        const input = parentDiv.querySelector('input.edit-input');
+        const newName = input.value.trim() || 'أسبوع';
+        const weekNum = getWeekNumberFromName(newName);
+        const newWeekLink = document.createElement('a');
+        newWeekLink.href = `weeks/weekend${weekNum}.html`;
+        newWeekLink.textContent = newName;
+        newWeekLink.className = 'week-name';
+        newWeekLink.style.textDecoration = 'none';
+        newWeekLink.style.color = 'inherit';
+        parentDiv.insertBefore(newWeekLink, input);
+        input.remove();
+        button.textContent = 'تعديل';
+        saveData();
+      }
+    }
+
+    function deleteWeek(button) {
+      button.closest('.cs-new-week').remove();
+      saveData();
+    }
+
+    function getWeekNumberFromName(name) {
+      const match = name.match(/\d+/);
+      return match ? match[0] : '1';
+    }
+
+    function saveData() {
+      const weeks = [];
+      const weeksDiv = document.getElementById('js-div');
+      for (let i = 0; i < weeksDiv.children.length; i++) {
+        const weekDiv = weeksDiv.children[i];
+        const weekNameElem = weekDiv.querySelector('.week-name');
+        if (!weekNameElem) continue;
+        const weekName = weekNameElem.textContent;
+        weeks.push({ weekName });
+      }
+      localStorage.setItem('weeksData_simple_v2', JSON.stringify(weeks));
+    }
+
+    function loadData() {
+      const data = localStorage.getItem('weeksData_simple_v2');
+      if (!data) return;
+      const weeks = JSON.parse(data);
+      weekscount = weeks.length;
+      const container = document.getElementById('js-div');
+      container.innerHTML = '';
+
+      weeks.forEach((week, index) => {
+        const weekNumber = index + 1;
+        const newDiv = document.createElement('div');
+        newDiv.className = 'cs-new-week';
+
+        newDiv.innerHTML = `
+          <div class="week-header">
+            <a href="weeks/weekend${weekNumber}.html" class="week-name" style="text-decoration:none; color:inherit;">${week.weekName}</a>
+            <div>
+              <button class="action-btn edit-btn" onclick="editWeek(this)">تعديل</button>
+              <button class="action-btn delete-btn" onclick="deleteWeek(this)">حذف</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(newDiv);
+      });
+    }
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>

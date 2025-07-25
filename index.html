@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>تسجيل الدخول</title>
+  <style>
+    body {
+      background-image: url(/img/login-page-img.jpeg);
+      background-repeat: no-repeat;
+      background-size: cover;
+      font-family: 'Tahoma', sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-left: 0;
+    }
+    .note {
+      font-size: 13px;
+      color: #666;
+      margin-top: 15px;
+    }
+    .account-message {
+      font-size: 15px;
+      margin-top: 10px;
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <h2>تسجيل الدخول</h2>
+
+    <label for="accountType">اختر نوع الحساب:</label>
+    <select id="accountType">
+      <option value="student">حساب الطالب</option>
+      <option value="teacher">حساب المعلم</option>
+    </select>
+
+    <p id="accountMessage" class="account-message"></p>
+
+    <input type="text" id="username" placeholder="اسم المستخدم" autocomplete="username" />
+    <input type="password" id="password" placeholder="كلمة المرور" autocomplete="current-password"
+    onkeydown="if (event.key==='Enter'){start();}"
+    />
+
+    <button id="loginBtn" onclick="
+    start();
+    ">دخول</button>
+
+    <p class="note">⚠️ لا يمكنك إنشاء حساب من هنا. المعلم فقط يمكنه إنشاء حسابات جديدة.</p>
+  </div>
+
+<script>const accountTypeSelect = document.getElementById('accountType');
+const accountMessage = document.getElementById('accountMessage');
+
+function updateMessage() {
+  if (accountTypeSelect.value === 'teacher') {
+    accountMessage.textContent = '🔐';
+    accountMessage.style.color = 'green';
+  } else {
+    accountMessage.textContent = '👨‍🎓 يرجى إدخال بياناتك للمتابعة';
+    accountMessage.style.color = 'blue';
+  }
+}
+
+accountTypeSelect.addEventListener('change', updateMessage);
+updateMessage();
+
+async function start() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const accountType = accountTypeSelect.value;
+
+  if (!username || !password) {
+    alert('يرجى إدخال اسم المستخدم وكلمة المرور');
+    return;
+  }
+
+  if (accountType === 'teacher') {
+    try {
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, accountType })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+  localStorage.setItem('loggedInUsername', result.username || username);
+  window.location.href = result.redirect;
+} else {
+        alert(result.message || 'بيانات الدخول غير صحيحة.');
+      }
+    } catch (error) {
+      alert('⚠️ حدث خطأ في الاتصال بالسيرفر');
+      console.error(error);
+    }
+  } else if (accountType === 'student') {
+    let students = JSON.parse(localStorage.getItem('students')) || [];
+    const user = students.find(s => s.username === username && s.password === password);
+
+    if (user) {
+      localStorage.setItem('loggedInUsername', username);
+      window.location.href = 'student-dashboard/student-dashboard.html';
+    } else {
+      alert('اسم المستخدم أو كلمة المرور غير صحيحة.');
+      document.getElementById('password').value = '';
+    }
+  } else {
+    alert('يرجى اختيار نوع الحساب');
+  }
+}
+</script>
+
+</body>
+</html>

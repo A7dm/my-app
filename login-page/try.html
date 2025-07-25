@@ -1,0 +1,219 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>محاولة</title>
+
+    <style>
+      body{
+        font-family:Verdana, Geneva, Tahoma, sans-serif;
+        padding:20px;
+        direction:rtl;
+        align-items:center;
+      }
+
+      h2{
+        text-align:center;
+      }
+
+      th{
+        background-color:rgb(0, 89, 255);
+        color:white;
+        padding:20px
+      }
+
+      .action-btn{
+        padding:5px 10px;
+        font-size:12px;
+        border:none;
+        border-radius: 4px;
+        cursor: pointer;
+        color:white
+      }
+
+      .edit-btn{
+        background-color: #f0ad4e;
+      }
+
+      .delete-btn{
+        background-color: red;
+      }
+
+
+
+      
+    </style>
+
+  </head>
+
+  <body>
+  <h2>معلومات الطلاب</h2>
+
+  <table id="studentTable">
+    <thead id="tableHead">
+      <tr>
+        <th>رقم</th>
+        <th>اسم المستخدم</th>
+        <th>كلمة المرور</th>
+        <th>تعديل</th>
+        <th>حذف</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+
+    // تم بناء جدول الطلاب مع وظائف عرض، تعديل، وحذف (حتى الخطوة X)
+// آخر تحديث: 22 يوليو 2025
+
+    const studentTableBody = document.querySelector('#studentTable tbody')
+    const tabelHead = document.querySelector('tableHead');
+
+    function loadStudents() {
+      const students = JSON.parse(localStorage.getItem('students')) ||[];
+      studentTableBody.innerHTML=''
+
+      const studentsPerColumn =15;
+      const columnsCount = Math.ceil(students.length / studentsPerColumn);
+      const totalRows = studentsPerColumn;
+
+      tabelHead.innerHTML =''
+
+      const headerRow =document.createElement('tr');
+
+      for(let i =0 ; i<columnsCount;i++) {
+        headerRow.innerHTML += `
+        <th>رقم</th>
+        <th>اسم المستخدم</th>
+        <th>كلمة المرور</th>
+        <th>تعديل</th>
+        <th>حذف</th>
+        `;
+      }
+      tabelHead.appendChild(headerRow);
+
+
+
+
+
+      if(students.length ===0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan=5;
+        td.textContent='لاايوجد حسابات طلاب حاليا';
+        tr.appendChild(td);
+        return;
+      }
+      students.forEach((student , index) => {
+        const tr=document.createElement('tr');
+
+        const numTd = document.createElement('td');
+        numTd.textContent = index+1;
+        tr.appendChild(numTd);
+
+        const usernameTd = document.createElement('td')
+        usernameTd.textContent = student.username;
+        tr.appendChild(usernameTd);
+
+        const passwordTd = document.createElement('td');
+        passwordTd.textContent = student.password;
+        tr.appendChild(passwordTd);
+
+        const editTd = document.createElement('td');
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'تعديل'
+        editBtn.className = 'action-btn edit-btn';
+        editBtn.onclick = () => editStudent(index , tr);
+        editTd.appendChild(editBtn);
+        tr.appendChild(editTd);
+
+        const deleteTd = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent='حذف';
+        deleteBtn.className='action-btn delete-btn';
+        deleteBtn.onclick = () => deleteStudent(index);
+        deleteTd.appendChild(deleteBtn);
+        tr.appendChild(deleteTd);
+
+
+        studentTableBody.appendChild(tr);
+      })
+    };
+
+    function deleteStudent (index) {
+      if(!confirm('هل أنت متأكد من حذف هذا الحساب؟')) return;
+      let students = JSON.parse(localStorage.getItem('students')) || [];
+      students.splice(index,1);
+      localStorage.setItem('students' , JSON.stringify(students));
+      loadStudents()
+    }
+
+    function editStudent(index, tr) {
+      let students = JSON.parse(localStorage.getItem('students')) || [];
+      const student = students[index];
+
+      // تفريغ محتوى الصف
+      tr.innerHTML = '';
+
+      // رقم الطالب (غير قابل للتعديل)
+      const numTd = document.createElement('td');
+      numTd.textContent = index + 1;
+      tr.appendChild(numTd);
+
+      // حقل اسم المستخدم
+      const usernameTd = document.createElement('td');
+      const usernameInput = document.createElement('input');
+      usernameInput.type = 'text';
+      usernameInput.value = student.username;
+      usernameTd.appendChild(usernameInput);
+      tr.appendChild(usernameTd);
+
+      // حقل كلمة المرور
+      const passwordTd = document.createElement('td');
+      const passwordInput = document.createElement('input');
+      passwordInput.type = 'text';
+      passwordInput.value = student.password;
+      passwordTd.appendChild(passwordInput);
+      tr.appendChild(passwordTd);
+
+      // زر حفظ
+      const saveTd = document.createElement('td');
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = 'حفظ';
+      saveBtn.onclick = () => {
+        const newUsername = usernameInput.value.trim();
+        const newPassword = passwordInput.value.trim();
+
+        if (!newUsername || !newPassword) {
+          alert('يرجى تعبئة جميع الحقول');
+          return;
+        }
+
+        // التحقق من عدم تكرار اسم المستخدم مع طلاب آخرين
+        const exists = students.some((s, i) => s.username === newUsername && i !== index);
+        if (exists) {
+          alert('اسم المستخدم هذا موجود بالفعل!');
+          return;
+        }
+
+        // تحديث بيانات الطالب
+        students[index] = { username: newUsername, password: newPassword };
+        localStorage.setItem('students', JSON.stringify(students));
+        loadStudents(); // إعادة تحميل الجدول
+      };
+      saveTd.appendChild(saveBtn);
+      tr.appendChild(saveTd);
+
+      // إضافة خانة حذف فارغة لتكملة الأعمدة (اختياري)
+      tr.appendChild(document.createElement('td'));
+    }
+
+     
+    window.onload=loadStudents;
+    // مشروع جدول الطلاب - خطوة 4: عرض وتعديل وحذف الطلاب
+
+    
+  </script>
+
+  </body>
+</html>

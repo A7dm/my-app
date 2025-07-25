@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>قائمة الطلاب - الأسبوع 2</title>
+  <style>
+    body {
+      font-family: 'Tahoma', sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: auto;
+      margin: 20px auto;
+      border-collapse: collapse;
+      text-align: center;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    #backBtn {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px 15px;
+      font-size: 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background-color: #4285f4;
+      color: white;
+    }
+    input[type="text"], select {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>قائمة جميع الطلاب - الأسبوع 2</h2>
+  <button id="backBtn">العودة</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2">رقم</th>
+        <th>الاسم</th>
+        <th>اليوم</th>
+        <th>السورة</th>
+        <th>من-إلى</th>
+        <th>الإنجاز</th>
+        <th>التقييم</th>
+        <th>العجز</th>
+        <th>ملاحظات</th>
+      </tr>
+    </thead>
+    <tbody id="studentsBody"></tbody>
+  </table>
+
+  <datalist id="surahList"></datalist>
+
+  <script>
+    const quranSurahs = ["الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف",
+      "الأنفال", "التوبة", "يونس", "هود", "يوسف", "الرعد", "إبراهيم", "الحجر",
+      "النحل", "الإسراء", "الكهف", "مريم", "طه", "الأنبياء", "الحج", "المؤمنون",
+      "النور", "الفرقان", "الشعراء", "النمل", "القصص", "العنكبوت", "الروم",
+      "لقمان", "السجدة", "الأحزاب", "سبأ", "فاطر", "يس", "الصافات", "ص", "الزمر",
+      "غافر", "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية", "الأحقاف",
+      "محمد", "الفتح", "الحجرات", "ق", "الذاريات", "الطور", "النجم", "القمر",
+      "الرحمن", "الواقعة", "الحديد", "المجادلة", "الحشر", "الممتحنة", "الصف",
+      "الجمعة", "المنافقون", "التغابن", "الطلاق", "التحريم", "الملك", "القلم",
+      "الحاقة", "المعارج", "نوح", "الجن", "المزّمّل", "المدّثر", "القيامة",
+      "الإنسان", "المرسلات", "النبأ", "النازعات", "عبس", "التكوير", "الإنفطار",
+      "المطفّفين", "الإنشقاق", "البروج", "الطارق", "الأعلى", "الغاشية",
+      "الفجر", "البلد", "الشمس", "الليل", "الضحى", "الشرح", "التين", "العلق",
+      "القدر", "البينة", "الزلزلة", "العاديات", "القارعة", "التكاثر", "العصر",
+      "الهمزة", "الفيل", "قريش", "الماعون", "الكوثر", "الكافرون", "النصر",
+      "المسد", "الإخلاص", "الفلق", "الناس"];
+    const evaluations = ["ممتاز", "جيد جدا", "جيد", "لم ينجز", "غياب", "متأخر ولم يسمع", "إنجاز جزئي", "درس", "غاب ولكن عوض"];
+
+    const studentAccounts = JSON.parse(localStorage.getItem('students')) || [];
+    let students = JSON.parse(localStorage.getItem('students_weeks2')) || [];
+
+    if (students.length === 0) {
+      students = studentAccounts.map(student => ({
+        username: student.username,
+        week: "1",
+        sunday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" },
+        tuesday: { surah: "", fromTo: "", achievement: false, evaluation: "", deficit: "", notes: "" }
+      }));
+      localStorage.setItem('students_weeks2', JSON.stringify(students));
+    }
+
+    const studentsBody = document.getElementById('studentsBody');
+    const datalist = document.getElementById('surahList');
+
+    quranSurahs.forEach(surah => {
+      const option = document.createElement('option');
+      option.value = surah;
+      datalist.appendChild(option);
+    });
+
+    function saveData() {
+      localStorage.setItem('students_weeks2', JSON.stringify(students));
+    }
+
+    function createInput(value, callback, placeholder = '') {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = value || '';
+      input.placeholder = placeholder;
+      input.addEventListener('input', () => callback(input.value));
+      return input;
+    }
+
+    function createCheckbox(checked, callback) {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = checked;
+      checkbox.addEventListener('change', () => callback(checkbox.checked));
+      return checkbox;
+    }
+
+    function createEvaluationSelect(selectedValue, callback) {
+      const select = document.createElement('select');
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = 'اختر التقييم';
+      select.appendChild(defaultOption);
+
+      evaluations.forEach(val => {
+        const option = document.createElement('option');
+        option.value = val;
+        option.textContent = val;
+        if (val === selectedValue) option.selected = true;
+        select.appendChild(option);
+      });
+
+      select.addEventListener('change', () => callback(select.value));
+      return select;
+    }
+
+    students.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
+
+    students.forEach((student, index) => {
+      const createRow = (day, data) => {
+        const tr = document.createElement('tr');
+
+        if (day === 'الأحد') {
+          const numberTd = document.createElement('td');
+          numberTd.textContent = index + 1;
+          numberTd.rowSpan = 2;
+          tr.appendChild(numberTd);
+
+          const nameTd = document.createElement('td');
+          nameTd.textContent = student.username;
+          nameTd.rowSpan = 2;
+          tr.appendChild(nameTd);
+        }
+
+        const dayTd = document.createElement('td');
+        dayTd.textContent = day;
+        tr.appendChild(dayTd);
+
+        const surahInput = createInput(data.surah, val => {
+          data.surah = val;
+          saveData();
+        }, 'اكتب اسم السورة');
+        surahInput.setAttribute('list', 'surahList');
+        const surahTd = document.createElement('td');
+        surahTd.appendChild(surahInput);
+        tr.appendChild(surahTd);
+
+        const fromToTd = document.createElement('td');
+        fromToTd.appendChild(createInput(data.fromTo, val => {
+          data.fromTo = val;
+          saveData();
+        }, 'من - إلى'));
+        tr.appendChild(fromToTd);
+
+        const achvTd = document.createElement('td');
+        achvTd.appendChild(createCheckbox(data.achievement, val => {
+          data.achievement = val;
+          saveData();
+        }));
+        tr.appendChild(achvTd);
+
+        const evalTd = document.createElement('td');
+        evalTd.appendChild(createEvaluationSelect(data.evaluation, val => {
+          data.evaluation = val;
+          saveData();
+        }));
+        tr.appendChild(evalTd);
+
+        const defTd = document.createElement('td');
+        defTd.appendChild(createInput(data.deficit, val => {
+          data.deficit = val;
+          saveData();
+        }));
+        tr.appendChild(defTd);
+
+        const noteTd = document.createElement('td');
+        noteTd.appendChild(createInput(data.notes, val => {
+          data.notes = val;
+          saveData();
+        }));
+        tr.appendChild(noteTd);
+
+        return tr;
+      };
+
+      studentsBody.appendChild(createRow('الأحد', student.sunday));
+      studentsBody.appendChild(createRow('الثلاثاء', student.tuesday));
+    });
+
+    document.getElementById('backBtn').onclick = () => window.history.back();
+  </script>
+</body>
+</html>
