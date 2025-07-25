@@ -108,30 +108,38 @@
    "> حساب عدد الصفحات</button>
 </div>
 
-  <script>
+ <script>
+  window.onload = () => {
+    const username = localStorage.getItem('loggedInUsername');
 
-    const username = localStorage.getItem('loggedInUsername') || 'ضيف';
-document.getElementById('teacherName').textContent = username;
+    const allowedTeachers = [
+      'عبد الرحمن الشرفي',
+      'البراء الجعفري'
+    ];
 
-    console.log(username)
-    window.onload = () => {
-      if (username) {
-        document.getElementById('teacherName').textContent = username;
-      } else {
-        document.getElementById('teacherName').textContent = 'اسم غير معروف';
-      }
-    };
+    if (!username || !allowedTeachers.includes(username)) {
+      alert('❌ غير مصرح لك بالدخول. سيتم توجيهك إلى صفحة تسجيل الدخول.');
+      window.location.href = '/index.html';
+      return;
+    }
 
+    // ✅ عرض اسم المعلم
+    document.getElementById('teacherName').textContent = username;
+
+    // ✅ عند الضغط على زر معلومات الطلاب
     document.getElementById('gotoStudentsBtn').addEventListener('click', () => {
       window.location.href = 'students.html';
     });
+  };
 
-    function out () {
-      if(confirm('هل تريد تسجيل الخروج')) {
-        window.location.href='/index.html'
-      }
+  function out() {
+    if (confirm('هل تريد تسجيل الخروج؟')) {
+      localStorage.removeItem('loggedInUsername'); // ✅ إزالة بيانات الدخول
+      window.location.href = '/index.html';
     }
-  </script>
+  }
+</script>
+
 
 </body>
 </html>
